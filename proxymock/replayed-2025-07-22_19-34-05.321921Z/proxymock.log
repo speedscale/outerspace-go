@@ -1,0 +1,19 @@
+playing back recorded tests
+observed replay requests / responses are being written to proxymock/replayed
+Press ctrl-c to interrupt
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+2025-07-22 15:31:24 INFO  started user application  ( source:proxymock pid:8644 command:go run . )
+2025-07-22 15:31:24 INFO  report actual config is nil, pulling original  ( source:generator )
+2025-07-22 15:31:24 INFO  loading snapshot into memory  ( source:generator )
+2025-07-22 15:31:24 INFO  starting TCP probe  ( source:generator host:localhost:8080 timeout:30s )
+2025-07-22 15:31:24 INFO  successful TCP probe  ( source:generator )
+2025-07-22 15:31:24 INFO  replay in progress  ( stage:1/1 stageStrategy:trafficCopies stageTargetVUs:1 source:generator totalRequests:0 currentVUs:0 observedRPS:0 stageRequests:0/7 )
+2025-07-22 15:31:27 INFO  finalizing  ( source:generator sentRRPairCount:7 averageRPS:17 )
+2025-07-22 15:31:27 INFO  done  ( source:generator totalRequests:7 )
+2025-07-22 15:31:27 INFO  stopping user application  ( source:proxymock pid:8644 )
+2025-07-22 15:31:27 INFO  sent interrupt signal to child process  ( source:proxymock )
+2025-07-22 15:31:43 INFO  gracefully stopping your app  ( source:proxymock )
+2025-07-22 15:31:43 INFO  user application stopped gracefully  ( source:proxymock )
+2025-07-22 15:31:43 INFO  user application exited  ( source:proxymock exit_code:1 )
