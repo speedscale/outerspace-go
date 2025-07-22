@@ -120,7 +120,7 @@ func (c *SpaceXClient) GetAllRockets() ([]RocketSummary, error) {
 
 // GetLatestLaunch fetches details of the latest SpaceX launch
 func (c *SpaceXClient) GetLatestLaunch() (*Launch, error) {
-	resp, err := c.makeRequest("GET", fmt.Sprintf("%s/launches/latest", c.baseURL))
+	resp, err := c.makeRequest("GET", fmt.Sprintf("%s/launches/shuttle/latest", c.baseURL))
 	if err != nil {
 		return nil, err
 	}

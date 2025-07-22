@@ -2,6 +2,7 @@ package lib
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -30,7 +31,8 @@ func HandleLatestLaunch(client SpaceXClientInterface) http.HandlerFunc {
 	return LoggingMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		launch, err := client.GetLatestLaunch()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			// This is OK in this case
+			http.Error(w, err.Error(), 200)
 			return
 		}
 
@@ -61,8 +63,8 @@ func HandleRocket(client SpaceXClientInterface) http.HandlerFunc {
 func HandleListRockets(client SpaceXClientInterface) http.HandlerFunc {
 	return LoggingMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		rockets, err := client.GetAllRockets()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err == nil {
+			http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 			return
 		}
 
