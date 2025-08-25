@@ -23,6 +23,7 @@ const (
 	LaunchService_GetRocket_FullMethodName       = "/space.LaunchService/GetRocket"
 	LaunchService_GetRockets_FullMethodName      = "/space.LaunchService/GetRockets"
 	LaunchService_GetMathFact_FullMethodName     = "/space.LaunchService/GetMathFact"
+	LaunchService_GetAPOD_FullMethodName         = "/space.LaunchService/GetAPOD"
 )
 
 // LaunchServiceClient is the client API for LaunchService service.
@@ -39,6 +40,8 @@ type LaunchServiceClient interface {
 	GetRockets(ctx context.Context, in *GetRocketsRequest, opts ...grpc.CallOption) (*GetRocketsResponse, error)
 	// Get a random math fact
 	GetMathFact(ctx context.Context, in *GetMathFactRequest, opts ...grpc.CallOption) (*MathFact, error)
+	// Get NASA Astronomy Picture of the Day
+	GetAPOD(ctx context.Context, in *GetAPODRequest, opts ...grpc.CallOption) (*APOD, error)
 }
 
 type launchServiceClient struct {
@@ -89,6 +92,16 @@ func (c *launchServiceClient) GetMathFact(ctx context.Context, in *GetMathFactRe
 	return out, nil
 }
 
+func (c *launchServiceClient) GetAPOD(ctx context.Context, in *GetAPODRequest, opts ...grpc.CallOption) (*APOD, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(APOD)
+	err := c.cc.Invoke(ctx, LaunchService_GetAPOD_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LaunchServiceServer is the server API for LaunchService service.
 // All implementations must embed UnimplementedLaunchServiceServer
 // for forward compatibility.
@@ -103,6 +116,8 @@ type LaunchServiceServer interface {
 	GetRockets(context.Context, *GetRocketsRequest) (*GetRocketsResponse, error)
 	// Get a random math fact
 	GetMathFact(context.Context, *GetMathFactRequest) (*MathFact, error)
+	// Get NASA Astronomy Picture of the Day
+	GetAPOD(context.Context, *GetAPODRequest) (*APOD, error)
 	mustEmbedUnimplementedLaunchServiceServer()
 }
 
@@ -124,6 +139,9 @@ func (UnimplementedLaunchServiceServer) GetRockets(context.Context, *GetRocketsR
 }
 func (UnimplementedLaunchServiceServer) GetMathFact(context.Context, *GetMathFactRequest) (*MathFact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMathFact not implemented")
+}
+func (UnimplementedLaunchServiceServer) GetAPOD(context.Context, *GetAPODRequest) (*APOD, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAPOD not implemented")
 }
 func (UnimplementedLaunchServiceServer) mustEmbedUnimplementedLaunchServiceServer() {}
 func (UnimplementedLaunchServiceServer) testEmbeddedByValue()                       {}
@@ -218,6 +236,24 @@ func _LaunchService_GetMathFact_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LaunchService_GetAPOD_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAPODRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LaunchServiceServer).GetAPOD(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LaunchService_GetAPOD_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LaunchServiceServer).GetAPOD(ctx, req.(*GetAPODRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LaunchService_ServiceDesc is the grpc.ServiceDesc for LaunchService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -240,6 +276,10 @@ var LaunchService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMathFact",
 			Handler:    _LaunchService_GetMathFact_Handler,
+		},
+		{
+			MethodName: "GetAPOD",
+			Handler:    _LaunchService_GetAPOD_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

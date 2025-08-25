@@ -14,6 +14,8 @@ service LaunchService {
   rpc GetRockets (GetRocketsRequest) returns (GetRocketsResponse) {}
   // Get a random math fact
   rpc GetMathFact (GetMathFactRequest) returns (MathFact) {}
+  // Get NASA Astronomy Picture of the Day
+  rpc GetAPOD (GetAPODRequest) returns (APOD) {}
 }
 
 // Request message for getting the latest launch
@@ -34,6 +36,11 @@ message GetRocketsResponse {
 
 // Request message for getting a math fact
 message GetMathFactRequest {}
+
+// Request message for getting APOD
+message GetAPODRequest {
+  string date = 1; // YYYY-MM-DD format
+}
 
 // Response message containing launch details
 message Launch {
@@ -65,4 +72,15 @@ message MathFact {
   int32 number = 2;
   bool found = 3;
   string type = 4;
+}
+
+// Response message containing APOD data
+message APOD {
+  string date = 1;
+  string title = 2;
+  string explanation = 3;
+  string url = 4;
+  string hdurl = 5;
+  string media_type = 6;
+  string service_version = 7;
 } 
