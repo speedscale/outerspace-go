@@ -57,6 +57,12 @@ func (c *Client) GetMathFact(ctx context.Context) (*MathFact, error) {
 	return c.client.GetMathFact(ctx, req)
 }
 
+// GetAPOD calls the GetAPOD RPC
+func (c *Client) GetAPOD(ctx context.Context, date string) (*APOD, error) {
+	req := &GetAPODRequest{Date: date}
+	return c.client.GetAPOD(ctx, req)
+}
+
 // Example usage:
 func Example() {
 	// Create a new client

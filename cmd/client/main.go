@@ -43,7 +43,25 @@ func main() {
 
 	fmt.Printf("Server: %s, Poll interval: %v\n", serverAddr, interval)
 
-	// Main loop
+	// Start APOD polling in a separate goroutine (every 10 minutes)
+	apodInterval := 10 * time.Minute
+	go func() {
+		apodTicker := time.NewTicker(apodInterval)
+		defer apodTicker.Stop()
+		
+		// Call APOD immediately on start
+		if err := callAPOD(serverAddr); err != nil {
+			log.Printf("Initial APOD call failed: %v", err)
+		}
+		
+		for range apodTicker.C {
+			if err := callAPOD(serverAddr); err != nil {
+				log.Printf("APOD call failed: %v", err)
+			}
+		}
+	}()
+
+	// Main loop for other calls
 	for {
 		fmt.Printf("\n[%s] Starting client execution cycle\n", time.Now().Format(time.RFC3339))
 		
@@ -119,6 +137,41 @@ func executeClientCycle(serverAddr string) error {
 		fmt.Printf("Fact: %s\n", mathFact.Text)
 		fmt.Printf("Found: %v\n", mathFact.Found)
 	}
+
+	return nil
+}
+
+func callAPOD(serverAddr string) error {
+	client, err := grpc.NewClient(serverAddr)
+	if err != nil {
+		return fmt.Errorf("failed to create client: %w", err)
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Get today's date in YYYY-MM-DD format
+	today := time.Now().Format("2006-01-02")
+	
+	fmt.Printf("\n[%s] === Getting NASA APOD for %s ===\n", time.Now().Format(time.RFC3339), today)
+	apod, err := client.GetAPOD(ctx, today)
+	if err != nil {
+		return fmt.Errorf("failed to get APOD: %w", err)
+	}
+
+	fmt.Printf("Date: %s\n", apod.Date)
+	fmt.Printf("Title: %s\n", apod.Title)
+	fmt.Printf("Media Type: %s\n", apod.MediaType)
+	fmt.Printf("URL: %s\n", apod.Url)
+	if apod.Hdurl != "" {
+		fmt.Printf("HD URL: %s\n", apod.Hdurl)
+	}
+	fmt.Printf("Explanation: %.200s", apod.Explanation)
+	if len(apod.Explanation) > 200 {
+		fmt.Print("...")
+	}
+	fmt.Println()
 
 	return nil
 }

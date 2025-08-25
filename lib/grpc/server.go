@@ -15,13 +15,15 @@ type Server struct {
 	UnimplementedLaunchServiceServer
 	spaceClient   *lib.SpaceXClient
 	numbersClient *lib.NumbersClient
+	nasaClient    *lib.NASAClient
 }
 
 // NewServer creates a new gRPC server
-func NewServer(spaceClient *lib.SpaceXClient, numbersClient *lib.NumbersClient) *Server {
+func NewServer(spaceClient *lib.SpaceXClient, numbersClient *lib.NumbersClient, nasaClient *lib.NASAClient) *Server {
 	return &Server{
 		spaceClient:   spaceClient,
 		numbersClient: numbersClient,
+		nasaClient:    nasaClient,
 	}
 }
 
@@ -91,15 +93,33 @@ func (s *Server) GetMathFact(ctx context.Context, req *GetMathFactRequest) (*Mat
 	}, nil
 }
 
+// GetAPOD implements the LaunchService interface
+func (s *Server) GetAPOD(ctx context.Context, req *GetAPODRequest) (*APOD, error) {
+	apod, err := s.nasaClient.GetAPOD(req.Date)
+	if err != nil {
+		return nil, err
+	}
+
+	return &APOD{
+		Date:           apod.Date,
+		Title:          apod.Title,
+		Explanation:    apod.Explanation,
+		Url:            apod.Url,
+		Hdurl:          apod.HDUrl,
+		MediaType:      apod.MediaType,
+		ServiceVersion: apod.ServiceVersion,
+	}, nil
+}
+
 // StartServer starts the gRPC server
-func StartServer(spaceClient *lib.SpaceXClient, numbersClient *lib.NumbersClient, port string) error {
+func StartServer(spaceClient *lib.SpaceXClient, numbersClient *lib.NumbersClient, nasaClient *lib.NASAClient, port string) error {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		return err
 	}
 
 	s := grpc.NewServer()
-	RegisterLaunchServiceServer(s, NewServer(spaceClient, numbersClient))
+	RegisterLaunchServiceServer(s, NewServer(spaceClient, numbersClient, nasaClient))
 
 	log.Printf("Starting gRPC server on %s", port)
 	return s.Serve(lis)

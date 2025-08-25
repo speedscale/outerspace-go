@@ -22,6 +22,7 @@ func main() {
 
 	spaceClient := lib.NewSpaceXClient()
 	numbersClient := lib.NewNumbersClient()
+	nasaClient := lib.NewNASAClient()
 
 	// Define routes
 	http.HandleFunc("/", lib.HandleRoot())
@@ -39,7 +40,7 @@ func main() {
 	}()
 
 	// Start gRPC server
-	if err := grpc.StartServer(spaceClient, numbersClient, ":50053"); err != nil {
+	if err := grpc.StartServer(spaceClient, numbersClient, nasaClient, ":50053"); err != nil {
 		log.Fatal(err)
 	}
 }

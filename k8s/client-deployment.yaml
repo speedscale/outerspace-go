@@ -21,7 +21,10 @@ spec:
         - name: GRPC_SERVER_ADDR
           value: "outerspace-server:50053"
         - name: POLL_INTERVAL
-          value: "30m"
+          valueFrom:
+            configMapKeyRef:
+              name: outerspace-client-config
+              key: POLL_INTERVAL
         resources:
           requests:
             memory: "32Mi"

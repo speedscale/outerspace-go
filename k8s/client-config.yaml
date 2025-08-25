@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: outerspace-client-config
+  labels:
+    app: outerspace-client
+data:
+  POLL_INTERVAL: "5s"
