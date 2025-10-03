@@ -60,13 +60,11 @@ func executeClientCycle(serverAddr string) error {
 	client := http.NewClient(serverAddr)
 	defer client.Close()
 
-	// Create a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	// Get latest launch
 	fmt.Println("\n=== Getting Latest Launch ===")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	launch, err := client.GetLatestLaunch(ctx)
+	cancel()
 	if err != nil {
 		log.Printf("Failed to get latest launch: %v", err)
 	} else {
@@ -79,7 +77,9 @@ func executeClientCycle(serverAddr string) error {
 
 	// Get all rockets
 	fmt.Println("\n=== Getting All Rockets ===")
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	rockets, err := client.GetRockets(ctx)
+	cancel()
 	if err != nil {
 		log.Printf("Failed to get rockets: %v", err)
 	} else {
@@ -93,7 +93,9 @@ func executeClientCycle(serverAddr string) error {
 	if rockets != nil && len(rockets.Rockets) > 0 {
 		fmt.Println("\n=== Getting Rocket Details ===")
 		rocketID := rockets.Rockets[0].Id
+		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 		rocket, err := client.GetRocket(ctx, rocketID)
+		cancel()
 		if err != nil {
 			log.Printf("Failed to get rocket details: %v", err)
 		} else {
@@ -106,7 +108,9 @@ func executeClientCycle(serverAddr string) error {
 
 	// Get math fact
 	fmt.Println("\n=== Getting Math Fact ===")
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	mathFact, err := client.GetMathFact(ctx)
+	cancel()
 	if err != nil {
 		log.Printf("Failed to get math fact: %v", err)
 	} else {
@@ -118,7 +122,9 @@ func executeClientCycle(serverAddr string) error {
 
 	// Get NASA data
 	fmt.Println("\n=== Getting NASA Astronomy Picture of the Day ===")
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	nasaData, err := client.GetNASAData(ctx)
+	cancel()
 	if err != nil {
 		log.Printf("Failed to get NASA data: %v", err)
 	} else {

@@ -14,3 +14,6 @@ GET http://{{host}}/api/rockets
 
 ### Details of specific rocket
 GET http://{{host}}/api/rocket?id=5e9d0d96eda699382d09d1ee
+
+### Details of specific rocket
+GET http://{{host}}/api/nasa
