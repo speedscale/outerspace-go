@@ -6,7 +6,7 @@ PROXYMOCK_ENV = http_proxy=socks5h://localhost:4140 \
                 SSL_CERT_FILE=~/.speedscale/certs/tls.crt
 
 # Find most recent recording or snapshot directory
-PROXYMOCK_RECORDING := $(shell find ./proxymock \( -name "recorded-*" -o -name "snapshot-*" \) -type d -exec ls -td {} + | head -n 1)
+PROXYMOCK_RECORDING := $(shell find ./proxymock \( -name "recorded-*" -o -name "snapshot-*" -o -name "pulled-*" \) -type d -exec ls -td {} + | head -n 1)
 
 # Version management
 CURRENT_VERSION := $(shell cat VERSION)
