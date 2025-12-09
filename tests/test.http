@@ -9,6 +9,9 @@ GET http://{{host}}/api/numbers
 ### Details of latest rocket launch
 GET http://{{host}}/api/latest-launch
 
+### Summary of launches by year and ship (last 3 years)
+GET http://{{host}}/api/launches-summary
+
 ### List of rockets
 GET http://{{host}}/api/rockets
 

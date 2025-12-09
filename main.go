@@ -31,6 +31,7 @@ func main() {
 	http.HandleFunc("/api/rockets", lib.HandleListRockets(spaceClient))
 	http.HandleFunc("/api/numbers", lib.HandleNumbers(numbersClient))
 	http.HandleFunc("/api/nasa", lib.HandleNASA(nasaClient))
+	http.HandleFunc("/api/launches-summary", lib.HandleLaunchesSummary(spaceClient))
 
 	// Start HTTP server in a goroutine
 	go func() {

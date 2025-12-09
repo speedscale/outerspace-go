@@ -5,6 +5,7 @@ type SpaceXClientInterface interface {
 	GetAllRockets() ([]RocketSummary, error)
 	GetRocket(id string) (*Rocket, error)
 	GetLatestLaunch() (*Launch, error)
+	GetLaunchesSummary() (*LaunchesSummary, error)
 }
 
 // NumbersClientInterface defines the interface for Numbers API client

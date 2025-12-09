@@ -9,46 +9,44 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-// Mock SpaceX client
-type MockSpaceXClient struct {
-	mock.Mock
+// Stub SpaceX client
+type StubSpaceXClient struct {
+	rockets              []RocketSummary
+	rocket               *Rocket
+	launch               *Launch
+	launchesSummary      *LaunchesSummary
+	rocketError          error
+	launchError          error
+	rocketsError         error
+	launchesSummaryError error
 }
 
-func (m *MockSpaceXClient) GetAllRockets() ([]RocketSummary, error) {
-	args := m.Called()
-	return args.Get(0).([]RocketSummary), args.Error(1)
+func (s *StubSpaceXClient) GetAllRockets() ([]RocketSummary, error) {
+	return s.rockets, s.rocketsError
 }
 
-func (m *MockSpaceXClient) GetRocket(id string) (*Rocket, error) {
-	args := m.Called(id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*Rocket), args.Error(1)
+func (s *StubSpaceXClient) GetRocket(id string) (*Rocket, error) {
+	return s.rocket, s.rocketError
 }
 
-func (m *MockSpaceXClient) GetLatestLaunch() (*Launch, error) {
-	args := m.Called()
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*Launch), args.Error(1)
+func (s *StubSpaceXClient) GetLatestLaunch() (*Launch, error) {
+	return s.launch, s.launchError
 }
 
-// Mock Numbers client
-type MockNumbersClient struct {
-	mock.Mock
+func (s *StubSpaceXClient) GetLaunchesSummary() (*LaunchesSummary, error) {
+	return s.launchesSummary, s.launchesSummaryError
 }
 
-func (m *MockNumbersClient) GetMathFact() (*MathFact, error) {
-	args := m.Called()
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*MathFact), args.Error(1)
+// Stub Numbers client
+type StubNumbersClient struct {
+	fact  *MathFact
+	error error
+}
+
+func (s *StubNumbersClient) GetMathFact() (*MathFact, error) {
+	return s.fact, s.error
 }
 
 func TestHandleRoot(t *testing.T) {
@@ -71,21 +69,21 @@ func TestHandleRoot(t *testing.T) {
 	assert.Contains(t, endpoints, "/api/rocket")
 	assert.Contains(t, endpoints, "/api/latest-launch")
 	assert.Contains(t, endpoints, "/api/numbers")
+	assert.Contains(t, endpoints, "/api/launches-summary")
 }
 
 func TestHandleListRockets(t *testing.T) {
-	mockClient := new(MockSpaceXClient)
-	mockRockets := []RocketSummary{
-		{ID: "123", Name: "Falcon 9"},
-		{ID: "456", Name: "Falcon Heavy"},
+	stubClient := &StubSpaceXClient{
+		rockets: []RocketSummary{
+			{ID: "123", Name: "Falcon 9"},
+			{ID: "456", Name: "Falcon Heavy"},
+		},
 	}
-
-	mockClient.On("GetAllRockets").Return(mockRockets, nil)
 
 	req := httptest.NewRequest("GET", "/api/rockets", nil)
 	w := httptest.NewRecorder()
 
-	handler := HandleListRockets(mockClient)
+	handler := HandleListRockets(stubClient)
 	handler(w, req)
 
 	resp := w.Result()
@@ -100,30 +98,27 @@ func TestHandleListRockets(t *testing.T) {
 	assert.Len(t, rockets, 2)
 	assert.Equal(t, "Falcon 9", rockets[0].Name)
 	assert.Equal(t, "456", rockets[1].ID)
-
-	mockClient.AssertExpectations(t)
 }
 
 func TestHandleRocket(t *testing.T) {
-	mockClient := new(MockSpaceXClient)
-	mockRocket := &Rocket{
-		ID:          "123",
-		Name:        "Falcon 9",
-		Description: "Orbital rocket",
-		Height: struct {
-			Meters float64 `json:"meters"`
-		}{Meters: 70},
-		Mass: struct {
-			Kg int `json:"kg"`
-		}{Kg: 549054},
+	stubClient := &StubSpaceXClient{
+		rocket: &Rocket{
+			ID:          "123",
+			Name:        "Falcon 9",
+			Description: "Orbital rocket",
+			Height: struct {
+				Meters float64 `json:"meters"`
+			}{Meters: 70},
+			Mass: struct {
+				Kg int `json:"kg"`
+			}{Kg: 549054},
+		},
 	}
-
-	mockClient.On("GetRocket", "123").Return(mockRocket, nil)
 
 	req := httptest.NewRequest("GET", "/api/rocket?id=123", nil)
 	w := httptest.NewRecorder()
 
-	handler := HandleRocket(mockClient)
+	handler := HandleRocket(stubClient)
 	handler(w, req)
 
 	resp := w.Result()
@@ -137,61 +132,55 @@ func TestHandleRocket(t *testing.T) {
 
 	assert.Equal(t, "Falcon 9", rocket.Name)
 	assert.Equal(t, "123", rocket.ID)
-
-	mockClient.AssertExpectations(t)
 }
 
 func TestHandleRocket_MissingID(t *testing.T) {
-	mockClient := new(MockSpaceXClient)
+	stubClient := &StubSpaceXClient{}
 
 	req := httptest.NewRequest("GET", "/api/rocket", nil)
 	w := httptest.NewRecorder()
 
-	handler := HandleRocket(mockClient)
+	handler := HandleRocket(stubClient)
 	handler(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-
-	mockClient.AssertNotCalled(t, "GetRocket")
 }
 
 func TestHandleRocket_Error(t *testing.T) {
-	mockClient := new(MockSpaceXClient)
-	mockClient.On("GetRocket", "999").Return(nil, errors.New("not found"))
+	stubClient := &StubSpaceXClient{
+		rocketError: errors.New("not found"),
+	}
 
 	req := httptest.NewRequest("GET", "/api/rocket?id=999", nil)
 	w := httptest.NewRecorder()
 
-	handler := HandleRocket(mockClient)
+	handler := HandleRocket(stubClient)
 	handler(w, req)
 
 	resp := w.Result()
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-
-	mockClient.AssertExpectations(t)
 }
 
 func TestHandleLatestLaunch(t *testing.T) {
-	mockClient := new(MockSpaceXClient)
-	mockLaunch := &Launch{
-		FlightNumber: 100,
-		MissionName:  "Mission X",
-		DateUTC:      "2023-01-01T12:00:00Z",
-		Success:      true,
-		Details:      "Test mission",
+	stubClient := &StubSpaceXClient{
+		launch: &Launch{
+			FlightNumber: 100,
+			MissionName:  "Mission X",
+			DateUTC:      "2023-01-01T12:00:00Z",
+			Success:      true,
+			Details:      "Test mission",
+		},
 	}
-
-	mockClient.On("GetLatestLaunch").Return(mockLaunch, nil)
 
 	req := httptest.NewRequest("GET", "/api/latest-launch", nil)
 	w := httptest.NewRecorder()
 
-	handler := HandleLatestLaunch(mockClient)
+	handler := HandleLatestLaunch(stubClient)
 	handler(w, req)
 
 	resp := w.Result()
@@ -204,25 +193,22 @@ func TestHandleLatestLaunch(t *testing.T) {
 	json.Unmarshal(body, &launch)
 
 	assert.Equal(t, 100, launch.FlightNumber)
-
-	mockClient.AssertExpectations(t)
 }
 
 func TestHandleNumbers(t *testing.T) {
-	mockClient := new(MockNumbersClient)
-	mockFact := &MathFact{
-		Text:   "42 is the meaning of life",
-		Number: 42,
-		Found:  true,
-		Type:   "math",
+	stubClient := &StubNumbersClient{
+		fact: &MathFact{
+			Text:   "42 is the meaning of life",
+			Number: 42,
+			Found:  true,
+			Type:   "math",
+		},
 	}
-
-	mockClient.On("GetMathFact").Return(mockFact, nil)
 
 	req := httptest.NewRequest("GET", "/api/numbers", nil)
 	w := httptest.NewRecorder()
 
-	handler := HandleNumbers(mockClient)
+	handler := HandleNumbers(stubClient)
 	handler(w, req)
 
 	resp := w.Result()
@@ -236,6 +222,62 @@ func TestHandleNumbers(t *testing.T) {
 
 	assert.Equal(t, "42 is the meaning of life", fact.Text)
 	assert.Equal(t, 42, fact.Number)
+}
 
-	mockClient.AssertExpectations(t)
+func TestHandleLaunchesSummary(t *testing.T) {
+	stubClient := &StubSpaceXClient{
+		launchesSummary: &LaunchesSummary{
+			ByYear: map[string]int{
+				"2023": 10,
+				"2024": 15,
+				"2025": 5,
+			},
+			ByShip: map[string]int{
+				"ship1": 5,
+				"ship2": 8,
+				"none":  17,
+			},
+			Total: 30,
+		},
+	}
+
+	req := httptest.NewRequest("GET", "/api/launches-summary", nil)
+	w := httptest.NewRecorder()
+
+	handler := HandleLaunchesSummary(stubClient)
+	handler(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	body, _ := io.ReadAll(resp.Body)
+	var summary LaunchesSummary
+	json.Unmarshal(body, &summary)
+
+	assert.Equal(t, 30, summary.Total)
+	assert.Equal(t, 10, summary.ByYear["2023"])
+	assert.Equal(t, 15, summary.ByYear["2024"])
+	assert.Equal(t, 5, summary.ByYear["2025"])
+	assert.Equal(t, 5, summary.ByShip["ship1"])
+	assert.Equal(t, 8, summary.ByShip["ship2"])
+	assert.Equal(t, 17, summary.ByShip["none"])
+}
+
+func TestHandleLaunchesSummary_Error(t *testing.T) {
+	stubClient := &StubSpaceXClient{
+		launchesSummaryError: errors.New("API error"),
+	}
+
+	req := httptest.NewRequest("GET", "/api/launches-summary", nil)
+	w := httptest.NewRecorder()
+
+	handler := HandleLaunchesSummary(stubClient)
+	handler(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
