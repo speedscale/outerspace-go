@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -117,8 +118,8 @@ func (c *Client) GetLatestLaunch(ctx context.Context) (*Launch, error) {
 
 // GetRocket calls the HTTP API to get a specific rocket
 func (c *Client) GetRocket(ctx context.Context, id string) (*Rocket, error) {
-	url := fmt.Sprintf("%s/api/rocket?id=%s", c.baseURL, id)
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	u := fmt.Sprintf("%s/api/rocket?id=%s", c.baseURL, url.QueryEscape(id))
+	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
 		return nil, err
 	}
