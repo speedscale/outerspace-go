@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: outerspace-server
-        image: ghcr.io/speedscale/outerspace-go:v1.1.4
+        image: ghcr.io/speedscale/outerspace-go:v1.1.5
         ports:
         - containerPort: 8080
           name: http

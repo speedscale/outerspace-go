@@ -32,7 +32,7 @@ RUN case "$TARGETPLATFORM" in \
       *) echo "Unsupported platform: $TARGETPLATFORM" && exit 1 ;; \
     esac && \
     CGO_ENABLED=0 GOOS=linux GOARCH=$GOARCH go build -a -o /outerspace-go \
-    -ldflags "-s -w -X main.Version=${VERSION} -X main.BuildTime=$(TZ=UTC date +%Y-%m-%dT%H:%M:%S%z)"
+    -ldflags "-w -X main.Version=${VERSION} -X main.BuildTime=$(TZ=UTC date +%Y-%m-%dT%H:%M:%S%z)"
 
 ################################################################################
 # RELEASE IMAGE

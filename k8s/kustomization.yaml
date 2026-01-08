@@ -5,16 +5,18 @@ metadata:
   name: outerspace-base
 
 resources:
-  - server-deployment.yaml
-  - server-service.yaml
-  - client-deployment.yaml
+- server-deployment.yaml
+- server-service.yaml
+- client-deployment.yaml
 
-commonLabels:
-  app.kubernetes.io/name: outerspace
-  app.kubernetes.io/part-of: outerspace-system
 
 images:
-  - name: ghcr.io/speedscale/outerspace-go
-    newTag: v1.1.4
-  - name: ghcr.io/speedscale/outerspace-go-client
-    newTag: v1.1.4
+- name: ghcr.io/speedscale/outerspace-go
+  newTag: v1.1.5
+- name: ghcr.io/speedscale/outerspace-go-client
+  newTag: v1.1.5
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/name: outerspace
+    app.kubernetes.io/part-of: outerspace-system
