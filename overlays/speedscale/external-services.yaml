@@ -1,0 +1,46 @@
+# ServiceEntries required for REGISTRY_ONLY Istio egress policy.
+# Covers all external APIs called by outerspace-server.
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: external-spacexdata
+  namespace: outerspace
+spec:
+  hosts:
+  - api.spacexdata.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  location: MESH_EXTERNAL
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: external-nasa
+  namespace: outerspace
+spec:
+  hosts:
+  - api.nasa.gov
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  location: MESH_EXTERNAL
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: external-numbersapi
+  namespace: outerspace
+spec:
+  hosts:
+  - numbersapi.com
+  ports:
+  - number: 80
+    name: http
+    protocol: HTTP
+  location: MESH_EXTERNAL
+  resolution: DNS
