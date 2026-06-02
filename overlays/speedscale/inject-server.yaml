@@ -1,0 +1,6 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: outerspace-server
+  annotations:
+    capture.speedscale.com/enabled: "true"

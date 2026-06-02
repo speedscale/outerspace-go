@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: outerspace
+  labels:
+    istio-injection: enabled
+    speedscale: "true"
