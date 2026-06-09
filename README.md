@@ -1,8 +1,13 @@
-# Demo App: outerspace-go
+# Demo App: outerspace-go [DEPRECATED]
+
+> **This demo is deprecated.** The SpaceX API it depends on has been permanently archived. Use the actively maintained demo apps instead:
+>
+> - **[Node demo](https://github.com/speedscale/demo/tree/main/node)** — Express + axios, calls Hugging Face, OpenRouter, NASA, and GitHub APIs
+> - **[Python demo](https://github.com/speedscale/demo/tree/main/python)** — Flask + requests, same endpoints
 
 [![CI/CD](https://github.com/speedscale/outerspace-go/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/speedscale/outerspace-go/actions/workflows/ci-cd.yml)
 
-Outerspace is a demo app that uses the SpaceX API to fetch data about SpaceX launches, rockets, and capsules. It also talks to a numbers API that consistently generates random results.
+Outerspace was a demo app that used the SpaceX API to fetch data about SpaceX launches, rockets, and capsules. The SpaceX API was archived in June 2026, so this app no longer functions against live APIs. The recorded traffic in `proxymock/` still works for demonstrating mock and replay.
 
 ![outerspace-go](/img/outerspace-go.png)
 
