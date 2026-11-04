@@ -1,13 +1,8 @@
-# Demo App: outerspace-go [DEPRECATED]
-
-> **This demo is deprecated.** The SpaceX API it depends on has been permanently archived. Use the actively maintained demo apps instead:
->
-> - **[Node demo](https://github.com/speedscale/demo/tree/main/node)** — Express + axios, calls Hugging Face, OpenRouter, NASA, and GitHub APIs
-> - **[Python demo](https://github.com/speedscale/demo/tree/main/python)** — Flask + requests, same endpoints
+# Demo App: outerspace-go
 
 [![CI/CD](https://github.com/speedscale/outerspace-go/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/speedscale/outerspace-go/actions/workflows/ci-cd.yml)
 
-Outerspace was a demo app that used the SpaceX API to fetch data about SpaceX launches, rockets, and capsules. The SpaceX API was archived in June 2026, so this app no longer functions against live APIs. The recorded traffic in `proxymock/` still works for demonstrating mock and replay.
+Outerspace is a Go HTTP and gRPC demo with launch, rocket, math fact and astronomy endpoints. Its outbound requests use frozen demo data on Speedscale's AWS S3 and CloudFront backend, avoiding retired APIs and public API quotas. The sample data is synthetic and is not current SpaceX or NASA data. The application still makes real outbound HTTPS calls for traffic capture, mocking and replay.
 
 ![outerspace-go](/img/outerspace-go.png)
 
@@ -55,9 +50,17 @@ There are unit tests all through the code that you can easily run:
 go test -v ./...
 ```
 
+## Upstream configuration
+
+The default backend is `https://demo-api.trafficreplay.com/outerspace`. Set `DEMO_UPSTREAM_BASE_URL` to use a different deployment of the [reference backend](https://github.com/speedscale/mock-lab/tree/main/shared). Its static export must contain the `outerspace/` objects before the app is deployed. No API key is required for demo data.
+
+`SPACEX_BASE_URL`, `NUMBERS_BASE_URL` and `NASA_BASE_URL` independently override each upstream. Each accepts the API root, before `/rockets.json` (and `/rockets/{id}`), `/random/math` or `/planetary/apod`. Set both `NASA_BASE_URL=https://api.nasa.gov` and `NASA_API_KEY` only when deliberately using the live NASA API. The app sends no NASA key to its default demo backend. The launch summary fetches the static launch list with GET and filters the last three years locally.
+
+Existing HTTP paths and response fields are preserved. Missing or failed upstream responses remain errors; the app does not silently substitute successful data. CI checks the HTTP handlers and upstream failure cases against an in-process reference server without cloud credentials.
+
 # proxymock
 
-For apps that make lots of API calls, [proxymock](https://proxymock.io/) can be used to record, mock, and replay those downstream calls.
+[proxymock](https://proxymock.io/) records, mocks and replays the app's HTTP dependencies. Record fresh traffic when changing the upstream URL; the old committed SpaceX, Numbers and NASA recordings target different hosts.
 
 ## Record with proxymock
 

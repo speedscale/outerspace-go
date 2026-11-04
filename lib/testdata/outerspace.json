@@ -1,0 +1,92 @@
+{
+  "spacex/launches/latest": {
+    "flight_number": 2,
+    "name": "Demo mission two",
+    "date_utc": "2026-01-15T12:00:00Z",
+    "success": true,
+    "details": "Synthetic frozen demo mission, not a live launch.",
+    "ships": [
+      "demo-recovery"
+    ]
+  },
+  "numbers/random/math": {
+    "text": "42 is an abundant number. Frozen demo fact.",
+    "number": 42,
+    "found": true,
+    "type": "math"
+  },
+  "nasa/planetary/apod": {
+    "title": "Frozen demo astronomy entry",
+    "date": "2026-01-15",
+    "explanation": "Synthetic API sample for repeatable testing; not the current NASA astronomy picture of the day.",
+    "url": "https://science.nasa.gov/universe/",
+    "media_type": "image",
+    "service_version": "v1"
+  },
+  "spacex/rockets/5e9d0d95eda69973a809d1ec": {
+    "id": "5e9d0d95eda69973a809d1ec",
+    "name": "Demo Falcon 9",
+    "description": "Frozen demo rocket data; not a live SpaceX response.",
+    "height": {
+      "meters": 70
+    },
+    "mass": {
+      "kg": 549054
+    }
+  },
+  "spacex/rockets/5e9d0d96eda699382d09d1ee": {
+    "id": "5e9d0d96eda699382d09d1ee",
+    "name": "Demo Falcon Heavy",
+    "description": "Frozen demo rocket data; not a live SpaceX response.",
+    "height": {
+      "meters": 70
+    },
+    "mass": {
+      "kg": 1420788
+    }
+  },
+  "spacex/rockets.json": [
+    {
+      "id": "5e9d0d95eda69973a809d1ec",
+      "name": "Demo Falcon 9",
+      "description": "Frozen demo rocket data; not a live SpaceX response.",
+      "height": {
+        "meters": 70
+      },
+      "mass": {
+        "kg": 549054
+      }
+    },
+    {
+      "id": "5e9d0d96eda699382d09d1ee",
+      "name": "Demo Falcon Heavy",
+      "description": "Frozen demo rocket data; not a live SpaceX response.",
+      "height": {
+        "meters": 70
+      },
+      "mass": {
+        "kg": 1420788
+      }
+    }
+  ],
+  "spacex/launches.json": [
+    {
+      "flight_number": 2,
+      "name": "Demo mission two",
+      "date_utc": "2026-01-15T12:00:00Z",
+      "success": true,
+      "details": "Synthetic frozen demo mission, not a live launch.",
+      "ships": [
+        "demo-recovery"
+      ]
+    },
+    {
+      "flight_number": 1,
+      "name": "Demo mission one",
+      "date_utc": "2025-06-01T12:00:00Z",
+      "success": true,
+      "details": "Synthetic frozen demo mission, not a live launch.",
+      "ships": []
+    }
+  ]
+}

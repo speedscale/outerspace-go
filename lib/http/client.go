@@ -52,7 +52,7 @@ func (c *Client) Close() error {
 // Launch represents the latest launch data
 type Launch struct {
 	FlightNumber int32  `json:"flight_number"`
-	MissionName  string `json:"mission_name"`
+	MissionName  string `json:"name"`
 	DateUtc      string `json:"date_utc"`
 	Success      bool   `json:"success"`
 	Details      string `json:"details"`
@@ -135,12 +135,22 @@ func (c *Client) GetRocket(ctx context.Context, id string) (*Rocket, error) {
 		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
 	}
 
-	var rocket Rocket
+	var rocket struct {
+		Id          string `json:"id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		Height      struct {
+			Meters float32 `json:"meters"`
+		} `json:"height"`
+		Mass struct {
+			Kg int32 `json:"kg"`
+		} `json:"mass"`
+	}
 	if err := json.NewDecoder(resp.Body).Decode(&rocket); err != nil {
 		return nil, err
 	}
-
-	return &rocket, nil
+	return &Rocket{Id: rocket.Id, Name: rocket.Name, Description: rocket.Description,
+		HeightMeters: rocket.Height.Meters, MassKg: rocket.Mass.Kg}, nil
 }
 
 // GetRockets calls the HTTP API to get all rockets

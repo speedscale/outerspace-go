@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/rs/zerolog/log"
 )
 
 // NumbersClient handles API calls to Numbers API
@@ -26,56 +24,21 @@ type MathFact struct {
 // NewNumbersClient creates a new Numbers API client
 func NewNumbersClient() *NumbersClient {
 	return &NumbersClient{
-		baseURL: "http://numbersapi.com",
+		baseURL: upstreamURL("NUMBERS_BASE_URL", "numbers"),
 		httpClient: &http.Client{
 			Timeout: time.Second * 10,
 		},
 	}
 }
 
-// Add makeRequest method
 func (c *NumbersClient) makeRequest(method, url string) (*http.Response, error) {
-	start := time.Now()
-
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid Numbers upstream URL")
 	}
-
-	resp, err := c.httpClient.Do(req)
-	duration := time.Since(start)
-
-	if err != nil {
-		log.Error().
-			Str("method", method).
-			Str("host", req.URL.Host).
-			Dur("latency", duration).
-			Err(err).
-			Msg("API request failed")
-		return nil, err
-	}
-
-	// Log X-prefixed headers
-	for header, values := range resp.Header {
-		if len(header) > 0 && (header[0] == 'X' || header[0] == 'x') {
-			log.Info().
-				Str("header", header).
-				Strs("values", values).
-				Msg("X-Header found")
-		}
-	}
-
-	log.Info().
-		Str("method", method).
-		Str("host", req.URL.Host).
-		Int("status", resp.StatusCode).
-		Dur("latency", duration).
-		Msg("Outbound")
-
-	return resp, nil
+	return upstreamRequest(c.httpClient, "Numbers", req)
 }
 
-// Update GetMathFact to use makeRequest
 func (c *NumbersClient) GetMathFact() (*MathFact, error) {
 	resp, err := c.makeRequest("GET", fmt.Sprintf("%s/random/math?json", c.baseURL))
 	if err != nil {

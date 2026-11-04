@@ -105,21 +105,6 @@ func executeClientCycle(serverAddr string) error {
 			fmt.Printf("Mass: %d kg\n", rocket.MassKg)
 		}
 
-		fmt.Println("\n=== Getting Rocket Details ===")
-		c := []byte{0x7f}
-		rocketID += string(c)
-
-		rocket, err = client.GetRocket(context.TODO(), rocketID)
-		if err != nil {
-			log.Printf("Failed to get rocket details: %v", err)
-		} else {
-			fmt.Printf("Rocket Name: %s\n", rocket.Name)
-			fmt.Printf("Description: %s\n", rocket.Description)
-			fmt.Printf("Height: %.2f meters\n", rocket.HeightMeters)
-			fmt.Printf("Mass: %d kg\n", rocket.MassKg)
-		}
-
-		return nil
 	}
 
 	// Get math fact
