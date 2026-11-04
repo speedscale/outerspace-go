@@ -12,9 +12,9 @@ resources:
 
 images:
 - name: ghcr.io/speedscale/outerspace-go
-  newTag: v1.1.5
+  newTag: v1.1.6
 - name: ghcr.io/speedscale/outerspace-go-client
-  newTag: v1.1.5
+  newTag: v1.1.6
 labels:
 - includeSelectors: true
   pairs:

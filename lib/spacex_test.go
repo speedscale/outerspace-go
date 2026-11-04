@@ -11,7 +11,7 @@ import (
 func TestSpaceXClient_GetAllRockets(t *testing.T) {
 	// Setup test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/v4/rockets", r.URL.Path)
+		assert.Equal(t, "/v4/rockets.json", r.URL.Path)
 		assert.Equal(t, "GET", r.Method)
 
 		// Return a sample response

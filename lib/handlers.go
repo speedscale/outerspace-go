@@ -90,7 +90,7 @@ func HandleNASA(client NASAClientInterface) http.HandlerFunc {
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
-			errorResponse := map[string]string{"error": "unknown error"}
+			errorResponse := map[string]string{"error": err.Error()}
 			json.NewEncoder(w).Encode(errorResponse)
 			return
 		}

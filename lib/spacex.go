@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -46,66 +45,32 @@ type RocketSummary struct {
 
 // LaunchesSummary provides a summary of launches by year and by ship
 type LaunchesSummary struct {
-	ByYear map[string]int            `json:"by_year"`
-	ByShip map[string]int            `json:"by_ship"`
-	Total  int                       `json:"total"`
+	ByYear map[string]int `json:"by_year"`
+	ByShip map[string]int `json:"by_ship"`
+	Total  int            `json:"total"`
 }
 
 // NewSpaceXClient creates a new SpaceX API client
 func NewSpaceXClient() *SpaceXClient {
 	return &SpaceXClient{
-		baseURL: "https://api.spacexdata.com/v4",
+		baseURL: upstreamURL("SPACEX_BASE_URL", "spacex"),
 		httpClient: &http.Client{
 			Timeout: time.Second * 10,
 		},
 	}
 }
 
-// Add logging to API calls
 func (c *SpaceXClient) makeRequest(method, url string) (*http.Response, error) {
-	start := time.Now()
-
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid SpaceX upstream URL")
 	}
-
-	resp, err := c.httpClient.Do(req)
-	duration := time.Since(start)
-
-	if err != nil {
-		log.Error().
-			Str("method", method).
-			Str("host", req.URL.Host).
-			Dur("latency", duration).
-			Err(err).
-			Msg("API request failed")
-		return nil, err
-	}
-
-	// Log X-prefixed headers
-	for header, values := range resp.Header {
-		if len(header) > 0 && (header[0] == 'X' || header[0] == 'x') {
-			log.Info().
-				Str("header", header).
-				Strs("values", values).
-				Msg("X-Header found")
-		}
-	}
-
-	log.Info().
-		Str("method", method).
-		Str("host", req.URL.Host).
-		Int("status", resp.StatusCode).
-		Dur("latency", duration).
-		Msg("API request completed")
-
-	return resp, nil
+	return upstreamRequest(c.httpClient, "SpaceX", req)
 }
 
 // GetAllRockets fetches all rocket summaries
 func (c *SpaceXClient) GetAllRockets() ([]RocketSummary, error) {
-	resp, err := c.makeRequest("GET", fmt.Sprintf("%s/rockets", c.baseURL))
+	resp, err := c.makeRequest("GET", fmt.Sprintf("%s/rockets.json", c.baseURL))
 	if err != nil {
 		return nil, err
 	}
@@ -159,74 +124,14 @@ func (c *SpaceXClient) GetRocket(rocketID string) (*Rocket, error) {
 
 // GetLaunchesSummary fetches launches from the last 3 years and summarizes by year and ship
 func (c *SpaceXClient) GetLaunchesSummary() (*LaunchesSummary, error) {
-	// Calculate the date 3 years ago
 	threeYearsAgo := time.Now().AddDate(-3, 0, 0)
-	startDate := threeYearsAgo.Format("2006-01-02T00:00:00.000Z")
-
-	// Query launches from the last 3 years using SpaceX API query parameters
-	// SpaceX API v4 supports querying with date_utc filter
-	url := fmt.Sprintf("%s/launches/query", c.baseURL)
-	
-	// Create a POST request with query body for SpaceX API v4 query endpoint
-	queryBody := map[string]interface{}{
-		"query": map[string]interface{}{
-			"date_utc": map[string]string{
-				"$gte": startDate,
-			},
-		},
-		"options": map[string]interface{}{
-			"limit": 200, // Get up to 200 launches (should be enough for 3 years)
-		},
-	}
-
-	jsonBody, err := json.Marshal(queryBody)
+	resp, err := c.makeRequest("GET", c.baseURL+"/launches.json")
 	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	start := time.Now()
-	resp, err := c.httpClient.Do(req)
-	duration := time.Since(start)
-
-	if err != nil {
-		log.Error().
-			Str("method", "POST").
-			Str("host", req.URL.Host).
-			Dur("latency", duration).
-			Err(err).
-			Msg("API request failed")
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	// Log X-prefixed headers
-	for header, values := range resp.Header {
-		if len(header) > 0 && (header[0] == 'X' || header[0] == 'x') {
-			log.Info().
-				Str("header", header).
-				Strs("values", values).
-				Msg("X-Header found")
-		}
-	}
-
-	log.Info().
-		Str("method", "POST").
-		Str("host", req.URL.Host).
-		Int("status", resp.StatusCode).
-		Dur("latency", duration).
-		Msg("API request completed")
-
-	// Parse the response - SpaceX query endpoint returns {docs: [...], totalDocs: ..., ...}
-	var queryResponse struct {
-		Docs []Launch `json:"docs"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&queryResponse); err != nil {
+	var launches []Launch
+	if err := json.NewDecoder(resp.Body).Decode(&launches); err != nil {
 		return nil, err
 	}
 
@@ -234,11 +139,11 @@ func (c *SpaceXClient) GetLaunchesSummary() (*LaunchesSummary, error) {
 	summary := &LaunchesSummary{
 		ByYear: make(map[string]int),
 		ByShip: make(map[string]int),
-		Total:  len(queryResponse.Docs),
+		Total:  0,
 	}
 
 	// Process each launch
-	for _, launch := range queryResponse.Docs {
+	for _, launch := range launches {
 		// Parse the date to extract year
 		launchDate, err := time.Parse(time.RFC3339, launch.DateUTC)
 		if err != nil {
@@ -254,6 +159,7 @@ func (c *SpaceXClient) GetLaunchesSummary() (*LaunchesSummary, error) {
 		if launchDate.After(threeYearsAgo) || launchDate.Equal(threeYearsAgo) {
 			year := launchDate.Format("2006")
 			summary.ByYear[year]++
+			summary.Total++
 
 			// Count by ship
 			if len(launch.Ships) > 0 {
